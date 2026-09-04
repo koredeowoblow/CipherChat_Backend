@@ -26,6 +26,19 @@ export class ConversationService {
     if (initiatorBlocked) throw new AppError('You have blocked this user', 403);
     if (recipientBlocked) throw new AppError('This user is not available', 403);
 
+    // Prevent duplicate direct conversations
+    const existingConversation = await Conversation.findOne({
+      isGroup: false,
+      $and: [
+        { 'participants.userId': initiatorId },
+        { 'participants.userId': recipientId }
+      ]
+    });
+
+    if (existingConversation) {
+      throw new AppError('A conversation with this user already exists.', 400);
+    }
+
     const conversation = await conversationRepository.createDirectConversation(initiatorId, recipientId);
     
     // Broadcast to the recipient so it shows up in real-time
