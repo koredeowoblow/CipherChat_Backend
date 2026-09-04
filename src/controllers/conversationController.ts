@@ -23,14 +23,14 @@ export class ConversationController {
   }
 
   public async acceptConversation(req: AuthRequest, res: Response) {
-    const conversationId = req.params.conversationId;
+    const conversationId = req.params.conversationId as string;
     const userId = req.user?.id as string;
     const conversation = await conversationService.acceptConversation(conversationId, userId);
     return ResponseHandler.success(res, 200, 'Chat request accepted', ConversationDto.toResponse(conversation));
   }
 
   public async rejectConversation(req: AuthRequest, res: Response) {
-    const conversationId = req.params.conversationId;
+    const conversationId = req.params.conversationId as string;
     const userId = req.user?.id as string;
     await conversationService.rejectConversation(conversationId, userId);
     return ResponseHandler.success(res, 200, 'Chat request rejected');
