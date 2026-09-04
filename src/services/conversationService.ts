@@ -3,7 +3,7 @@ import userRepository from '../repositories/userRepository';
 import { AppError } from '../utils/AppError';
 import messageHandler from '../websocket/messageHandler';
 import { EVENTS } from '../websocket/events';
-import { Conversation } from '../models';
+import { Conversation, User } from '../models';
 import connectionManager from '../websocket/connectionManager';
 
 export class ConversationService {
@@ -53,7 +53,21 @@ export class ConversationService {
       payload: { conversationId }
     });
 
-    return conversation;
+    // Populate user details before returning
+    const userIds = conversation.participants.map(p => p.userId);
+    const users = await User.find({ _id: { $in: userIds } });
+    const userMap = new Map(users.map((u: any) => [u.id || u._id.toString(), { id: u.id || u._id.toString(), username: u.username, avatar: u.avatar }]));
+    
+    const populatedConversation = {
+      ...conversation.toObject(),
+      id: conversation._id.toString(),
+      participants: conversation.participants.map((p: any) => ({
+        ...p.toObject(),
+        user: userMap.get(p.userId)
+      }))
+    };
+
+    return populatedConversation;
   }
 
   public async rejectConversation(conversationId: string, userId: string) {
