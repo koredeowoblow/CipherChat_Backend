@@ -62,6 +62,23 @@ export class MessageHandler {
       }
     });
   }
+
+  public async broadcastPresence(userId: string, isOnline: boolean) {
+    const conversations = await conversationRepository.findAllForUser(userId);
+    const notifiedUsers = new Set<string>();
+
+    conversations.forEach((c: any) => {
+      c.participants.forEach((p: any) => {
+        if (p.userId !== userId && !notifiedUsers.has(p.userId)) {
+          notifiedUsers.add(p.userId);
+          connectionManager.sendToUser(p.userId, {
+            type: EVENTS.USER_ONLINE,
+            payload: { userId, isOnline }
+          });
+        }
+      });
+    });
+  }
 }
 
 export default new MessageHandler();

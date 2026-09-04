@@ -42,6 +42,38 @@ export class MessageService {
 
     return messageRepository.findAllByConversation(conversationId);
   }
+
+  public async reactToMessage(messageId: string, userId: string, emoji: string) {
+    const message = await messageRepository.findById(messageId);
+    if (!message) {
+      throw new AppError('Message not found', 404);
+    }
+    
+    // Check if user is participant
+    const participant = await conversationRepository.findParticipant(message.conversationId, userId);
+    if (!participant) {
+      throw new AppError('Not authorized', 403);
+    }
+
+    const existingReactionIndex = message.reactions.findIndex((r: any) => r.userId === userId && r.emoji === emoji);
+    if (existingReactionIndex !== -1) {
+      // Toggle off
+      message.reactions.splice(existingReactionIndex, 1);
+    } else {
+      // Toggle on
+      message.reactions.push({ emoji, userId });
+    }
+
+    await message.save();
+
+    await messageHandler.broadcastToConversation(
+      message.conversationId,
+      'message:reaction', // Using string directly instead of EVENT since it's not defined yet
+      { messageId, conversationId: message.conversationId, reactions: message.reactions }
+    );
+
+    return message;
+  }
 }
 
 export default new MessageService();

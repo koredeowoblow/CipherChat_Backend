@@ -11,6 +11,7 @@ export interface IMessage extends Document {
   isDelivered: boolean;
   createdAt: Date;
   updatedAt: Date;
+  reactions: Array<{ emoji: string; userId: string }>;
 }
 
 const MessageSchema: Schema = new Schema(
@@ -22,7 +23,11 @@ const MessageSchema: Schema = new Schema(
     iv: { type: String, required: true },
     authTag: { type: String, required: true },
     isRead: { type: Boolean, default: false },
-    isDelivered: { type: Boolean, default: false }
+    isDelivered: { type: Boolean, default: false },
+    reactions: [{
+      emoji: { type: String, required: true },
+      userId: { type: String, required: true }
+    }]
   },
   {
     timestamps: true,

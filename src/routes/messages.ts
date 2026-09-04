@@ -12,5 +12,6 @@ router.get(
   "/conversation/:conversationId",
   asyncHandler(messageController.getMessages),
 );
+router.post("/:messageId/react", asyncHandler(messageController.reactToMessage));
 
 export default router;

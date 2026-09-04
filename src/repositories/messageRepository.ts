@@ -10,6 +10,10 @@ export class MessageRepository {
       .sort({ createdAt: 1 }) // 1 for ascending
       .limit(limit);
   }
+
+  public async findById(id: string) {
+    return Message.findById(id);
+  }
 }
 
 export default new MessageRepository();

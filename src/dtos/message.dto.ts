@@ -7,6 +7,7 @@ export class MessageDto {
   public iv: string;
   public authTag: string;
   public createdAt: string;
+  public reactions: Array<{ emoji: string; userId: string }>;
 
   constructor(message: any) {
     this.id = message.id;
@@ -17,6 +18,7 @@ export class MessageDto {
     this.iv = message.iv;
     this.authTag = message.authTag;
     this.createdAt = message.createdAt;
+    this.reactions = message.reactions || [];
   }
 
   public static toResponse(message: any) {

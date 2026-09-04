@@ -24,6 +24,7 @@ export const setupWebSocket = (wss: WebSocketServer) => {
       authWs.conversations = new Set();
 
       connectionManager.addConnection(authWs.userId, authWs);
+      messageHandler.broadcastPresence(authWs.userId, true);
 
       authWs.on('message', (data: string) => {
         try {
@@ -40,6 +41,9 @@ export const setupWebSocket = (wss: WebSocketServer) => {
 
       authWs.on('close', () => {
         connectionManager.removeConnection(authWs.userId, authWs);
+        if (!connectionManager.isUserOnline(authWs.userId)) {
+          messageHandler.broadcastPresence(authWs.userId, false);
+        }
       });
 
     } catch (error) {
@@ -53,6 +57,9 @@ export const setupWebSocket = (wss: WebSocketServer) => {
       const authWs = ws as AuthenticatedWebSocket;
       if (authWs.isAlive === false) {
         connectionManager.removeConnection(authWs.userId, authWs);
+        if (!connectionManager.isUserOnline(authWs.userId)) {
+          messageHandler.broadcastPresence(authWs.userId, false);
+        }
         return authWs.terminate();
       }
 
